@@ -2,12 +2,14 @@ import express from "express";
 import connectDB from "./database/connectDB.js";
 import { configDotenv } from "dotenv";
 import userRouter from "./routes/userRoute.js";
+import authRouter from "./routes/authRoute.js";
 configDotenv();
 
 const app = express();
 
 app.use(express.json());
 app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
 
 const port = process.env.PORT || 3000;
 const start = async () => {
