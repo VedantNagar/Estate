@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
+
 const SignUp = () => {
-  const [data, setData] = useState({});
+  const [data, setData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
   const handleChange = (e) => {
     setData({
       ...data,
@@ -10,15 +16,20 @@ const SignUp = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
-    const info = await response.json();
-    console.log(info);
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/auth/signup",
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error:", error.response.data);
+    }
   };
   return (
     <div className="bg-gray-100 min-h-screen flex flex-col items-center">
