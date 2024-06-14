@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const SignUp = () => {
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
   const [data, setData] = useState({
     username: "",
     email: "",
@@ -16,7 +19,9 @@ const SignUp = () => {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      setLoading(true);
       const response = await axios.post(
         "http://localhost:5000/api/auth/signup",
         data,
@@ -26,9 +31,19 @@ const SignUp = () => {
           },
         }
       );
+      if (response.data.success === false) {
+        setLoading(false);
+        setError(response.data.message);
+        return;
+      }
       console.log(response.data);
+      setLoading(false);
+      setError(null);
+      navigate("/signin");
     } catch (error) {
-      console.error("Error:", error.response.data);
+      setLoading(false);
+      console.error("Error:", error.response?.data || error.message);
+      setError(error.response?.data.message || "An error occurred");
     }
   };
   return (
@@ -41,12 +56,14 @@ const SignUp = () => {
           type="text"
           id="username"
           placeholder="Username"
+          value={data.username}
           className="border mt-4 p-2 rounded-lg w-full"
           onChange={handleChange}
         />
         <input
-          type="text"
+          type="email"
           placeholder="E-mail"
+          value={data.email}
           id="email"
           className="border mt-4 p-2 rounded-lg w-full"
           onChange={handleChange}
@@ -54,15 +71,17 @@ const SignUp = () => {
         <input
           type="password"
           placeholder="Password"
+          value={data.password}
           id="password"
           className="border mt-4 p-2 rounded-lg w-full"
           onChange={handleChange}
         />
         <button
+          disabled={loading}
           type="submit"
           className="bg-blue-700 hover:bg-blue-500 text-white font-semibold py-2 px-4 mt-4 rounded-lg w-full"
         >
-          SIGN UP
+          {loading ? "Loading..." : "Sign Up"}
         </button>
       </form>
       <div className="flex mt-5 text-left gap-1">
@@ -71,6 +90,7 @@ const SignUp = () => {
           <span className="text-blue-700">Login</span>
         </Link>
       </div>
+      {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
   );
 };
