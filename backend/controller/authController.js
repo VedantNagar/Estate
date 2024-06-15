@@ -1,6 +1,8 @@
 import { errorHandler } from "../middleware/errorHandler.js";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
 export const signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -22,8 +24,14 @@ export const signin = async (req, res, next) => {
     }
     const correctPassword = await bcrypt.compare(password, user.password);
     if (!correctPassword) {
-      errorHandler("Invalid password", 401);
+      errorHandler("Invalid credentials", 401);
     }
+    const { password: userPassword, ...rest } = user._doc;
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+    res
+      .cookie("token", token, { httpOnly: true })
+      .status(200)
+      .json({ rest, token });
   } catch (error) {
     next(error);
   }
