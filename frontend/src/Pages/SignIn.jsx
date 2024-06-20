@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import { signIn, signInFail, signInSuccess } from "../Redux/User/userSlice";
 
 const signin = () => {
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const { loading, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [data, setData] = useState({
     email: "",
     password: "",
@@ -20,7 +22,7 @@ const signin = () => {
     e.preventDefault();
 
     try {
-      setLoading(true);
+      dispatch(signIn());
       const response = await axios.post(
         "http://localhost:5000/api/auth/signin",
         data,
@@ -31,18 +33,15 @@ const signin = () => {
         }
       );
       if (response.data.success === false) {
-        setLoading(false);
-        setError(response.data.message);
+        dispatch(signInFail(response.data.message));
         return;
       }
       console.log(response.data);
-      setLoading(false);
-      setError(null);
+      dispatch(signInSuccess(response.data));
       navigate("/home");
     } catch (error) {
-      setLoading(false);
+      dispatch(signInFail(error.message));
       console.error("Error:", error.response?.data || error.message);
-      setError(error.response?.data.message || "An error occurred");
     }
   };
   return (
